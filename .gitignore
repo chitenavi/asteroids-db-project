@@ -3,6 +3,7 @@
 
 ## build folder
 dist-server
+dist
 build
 
 ## local certificates
