@@ -48,7 +48,7 @@ npm run start
 ## API Routes
 
 Use jwt for autorization
-Authorization header. "Bearer token"
+**Authorization** header. "Bearer token"
 
 ### Users
 
