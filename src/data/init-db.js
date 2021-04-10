@@ -20,6 +20,15 @@ const initAsteroidsDB = async () => {
 
     const asteroids = asteroidsRead.map(pha => {
       const loc = body2latlong(pha);
+
+      if (loc.long > 180) {
+        loc.long -= 180;
+      } else if (loc.long < -180) {
+        loc.long += 180;
+      }
+      if (loc.lat > 270) {
+        loc.lat -= 360;
+      }
       pha.latitude = loc.lat;
       pha.longitude = loc.long;
       return pha;

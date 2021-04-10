@@ -9,7 +9,7 @@
     "dev": "NODE_ENV=development nodemon --exec npm run restart",
     "restart": "rimraf dist && npm run build && npm run start",
     "start": "node dist/bin/www.js",
-    "initdb": "node dist/data/init-db.js"
+    "initdb": "npm run build && node dist/data/init-db.js"
   },
   "keywords": [],
   "author": "chitenavi@gmail.com <chitenavi@gmail.com>",
