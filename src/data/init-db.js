@@ -1,65 +1,67 @@
 import readline from 'readline';
 import csvtojson from 'csvtojson';
+import { body2latlong } from 'keplerjs';
 import Asteroid from '../models/asteroidModel';
-// import User from '../models/userModel';
+import Customer from '../models/customerModel';
 import conn from '../utils/connectMoonDB';
 
-// Delete all data and reload the initial asteroids
+// Delete all data and reload the initial asteroids, read from csv file
 const initAsteroidsDB = async () => {
   try {
     console.log('Emptying asteroids collection...');
     await Asteroid.deleteMany();
     console.log('Data successfully deleted!');
 
-    console.log('Loading adverts...');
+    console.log('Loading asteroids...');
     // Read CSV file with asteroids
-    await csvtojson()
-      .fromFile('./OrbitalParameters_PHAs.csv')
-      .then(async listAsteroidsObj => {
-        // console.log(listAsteroidsObj);
-        await Asteroid.create(listAsteroidsObj);
+    const asteroidsRead = await csvtojson().fromFile(
+      './data/OrbitalParameters_PHAs.csv'
+    );
 
-        console.log(
-          `Data successfully loaded!. ${listAsteroidsObj.length} asteroids have been created.`
-        );
-      });
+    const asteroids = asteroidsRead.map(pha => {
+      const loc = body2latlong(pha);
+      pha.latitude = loc.lat;
+      pha.longitude = loc.long;
+      return pha;
+    });
+    // console.log(asteroids);
+
+    const resAsteroids = await Asteroid.create(asteroids);
+
+    console.log(
+      `Data successfully loaded!. ${resAsteroids.length} asteroids have been created.`
+    );
   } catch (err) {
     console.log(`There was an error!: ${err}`);
     process.exit(1);
   }
 };
 
-// Delete all users and reload the initial users, one user for
-// development is mandatory
-// const initUsersDB = async () => {
-//   console.log('Emptying users collection...');
-//   await User.deleteMany();
+// Delete all customers and reload the initial customers, read from csv file
+const initCustomersDB = async () => {
+  console.log('Emptying customers collection...');
+  await Customer.deleteMany();
 
-//   console.log('Loading users...');
-//   const users = await User.insertMany([
-//     {
-//       username: 'DevNodePopUser',
-//       email: 'user@example.com',
-//       password: await User.hashPassword(process.env.DEV_USER_PASS),
-//     },
-//     {
-//       username: 'UserTest2',
-//       email: 'user2@example.com',
-//       password: await User.hashPassword(process.env.DEV_USER2_PASS),
-//     },
-//     {
-//       username: process.env.ADMIN_USERNAME,
-//       email: process.env.ADMIN_EMAIL,
-//       avatar: process.env.ADMIN_AVATAR,
-//       rol: 'ADMIN',
-//       password: await User.hashPassword(process.env.ADMIN_PASS),
-//     },
-//   ]);
-//   // console.log(users);
-//   console.log(
-//     `Users successfully loaded!. ${users.length} users have been created.`
-//   );
-// };
+  console.log('Loading customers...');
+
+  const customersReaded = await csvtojson().fromFile(
+    `./data/List_Of_Clients.csv`
+  );
+
+  const customers = customersReaded.map(e => ({
+    first_name: e.Name?.replace('ÿ', ''),
+    last_name: e.Lastname,
+    age: e.Age,
+    latitude: e.Latitude,
+    longitude: e.Longitude,
+  }));
+
+  const resCustomers = await Customer.create(customers);
+
+  console.log(
+    `Users successfully loaded!. ${resCustomers.length} customers have been created.`
+  );
+};
 
 function askUser(askText) {
   return new Promise((resolve, reject) => {
@@ -85,7 +87,7 @@ conn.once('open', async () => {
     }
 
     await initAsteroidsDB();
-    // await initUsersDB();
+    await initCustomersDB();
 
     // close connection
     conn.close();

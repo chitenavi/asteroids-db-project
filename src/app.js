@@ -1,44 +1,34 @@
 import express from 'express';
-import path from 'path';
 import cookieParser from 'cookie-parser';
 import logger from 'morgan';
-import jwtAuth from './utils/jwtAuth';
+import cors from 'cors';
+import jwtAuth from './middlewares/jwtAuth';
 
-import asteroidsRouter from './routes/api/neas';
-import usersRouter from './routes/api/users';
+import authRouter from './routes/api/auth';
+import asteroidRouter from './routes/api/asteroid';
+import userRouter from './routes/api/user';
+import customerRouter from './routes/api/customer';
+import globalErrorHandler from './middlewares/globalErrorHandler';
 
 const app = express();
 
+app.use(cors());
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
-app.use(express.static(path.join(__dirname, '..', 'public')));
 
 app.use((req, res, next) => {
   req.requestTime = new Date().toISOString();
   next();
 });
 
-app.use('/api/v1/neas', jwtAuth(), asteroidsRouter);
-app.use('/api/v1/users', usersRouter);
+app.use('/api/v1/auth', authRouter);
+app.use('/api/v1/asteroid', jwtAuth(), asteroidRouter);
+app.use('/api/v1/user', jwtAuth(), userRouter);
+app.use('/api/v1/customer', jwtAuth(), customerRouter);
 
 // Global error handler
-// app.use(globalErrorHandler);
-app.use((err, req, res, next) => {
-  // set locals, only providing error in development
-  res.locals.message = err.message;
-
-  res.locals.error = req.app.get('env') === 'development' ? err : {};
-
-  // Api request, response json format
-  if (req.originalUrl.startsWith('/api/v1/')) {
-    res.status(err.status).json({
-      status: 'fail',
-      code: err.status,
-      message: err.message,
-    });
-  }
-});
+app.use(globalErrorHandler());
 
 export default app;

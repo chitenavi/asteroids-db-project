@@ -6,14 +6,12 @@
 import dotenv from 'dotenv';
 import debug from 'debug';
 import http from 'http';
-import mongoose from 'mongoose';
+
+import '../utils/connectMoonDB';
 import app from '../app';
 
 dotenv.config();
 debug('asteroids:server');
-
-// Database connection string
-const DB = process.env.DATABASE;
 
 /**
  * Normalize a port into a number, string, or false.
@@ -49,19 +47,6 @@ app.set('port', port);
 const server = http.createServer(app);
 
 /**
- * Connect to database
- */
-
-mongoose
-  .connect(DB, {
-    useNewUrlParser: true,
-    useCreateIndex: true,
-    useFindAndModify: false,
-    useUnifiedTopology: true,
-  })
-  .then(() => console.log('DB connection successful!'));
-
-/**
  * Event listener for HTTP server "error" event.
  */
 
@@ -95,6 +80,13 @@ function onListening() {
   const addr = server.address();
   const bind = typeof addr === 'string' ? `pipe ${addr}` : `port ${addr.port}`;
   debug(`Listening on ${bind}`);
+  console.log(
+    `🔌 Server running at ${
+      process.env.NODE_ENV === 'development'
+        ? `http://localhost:${addr.port}`
+        : 'production_address'
+    }`
+  );
 }
 
 /**

@@ -7,7 +7,7 @@ import {
   getNeaById,
   updateNeaById,
   deleteNeaById,
-} from '../../controllers/asteroidsController';
+} from '../../controllers/asteroidController';
 
 const router = express.Router();
 
