@@ -1,6 +1,5 @@
 import readline from 'readline';
 import csvtojson from 'csvtojson';
-import { body2latlong } from 'keplerjs';
 import Asteroid from '../models/asteroidModel';
 import Customer from '../models/customerModel';
 import conn from '../utils/connectMoonDB';
@@ -14,26 +13,9 @@ const initAsteroidsDB = async () => {
 
     console.log('Loading asteroids...');
     // Read CSV file with asteroids
-    const asteroidsRead = await csvtojson().fromFile(
+    const asteroids = await csvtojson().fromFile(
       './data/OrbitalParameters_PHAs.csv'
     );
-
-    const asteroids = asteroidsRead.map(pha => {
-      const loc = body2latlong(pha);
-
-      if (loc.long > 180) {
-        loc.long -= 180;
-      } else if (loc.long < -180) {
-        loc.long += 180;
-      }
-      if (loc.lat > 270) {
-        loc.lat -= 360;
-      }
-      pha.latitude = loc.lat;
-      pha.longitude = loc.long;
-      return pha;
-    });
-    // console.log(asteroids);
 
     const resAsteroids = await Asteroid.create(asteroids);
 
